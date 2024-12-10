@@ -47,7 +47,9 @@ merged_df = pd.merge(
     indicator=True
 )
 
-# Replace NaN with NULL
+# Handle NaN for category columns and replace with NULL
+for col in merged_df.select_dtypes(include=['category']).columns:
+    merged_df[col] = merged_df[col].cat.add_categories('NULL')  # Add 'NULL' to categories
 merged_df.fillna('NULL', inplace=True)
 
 # Add a column to indicate mismatches

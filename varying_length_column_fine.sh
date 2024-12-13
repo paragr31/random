@@ -21,3 +21,42 @@ print: Outputs any line where a column’s length does not match the expected le
 Replace inputfile with the name of your file.
 Output:
 If a mismatch is found, the command prints the line number, the column number, the mismatched length, and the line content.
+
+
+awk -F $'\a' '
+NR == FNR {
+    expected_lengths[FNR] = $1  # Read expected lengths from the length file
+    next
+}
+{
+    for (i = 1; i <= NF; i++) {
+        if (i > length(expected_lengths)) {
+            print "Line", NR, "has more columns than expected."
+            print $0
+            next
+        }
+        if (length($i) != expected_lengths[i]) {
+            print "Line", NR, "differs at column", i, "length:", length($i), "!= expected:", expected_lengths[i]
+            print $0
+        }
+    }
+}
+' lengthsfile inputfile
+
+Explanation:
+-F $'\a': Sets the field separator to Ctrl+G.
+NR == FNR: Differentiates between the two files:
+When reading the first file (lengthsfile), it stores the expected lengths in an array expected_lengths.
+Each line in lengthsfile corresponds to the expected lengths for each column (one length per line).
+length($i) != expected_lengths[i]: Compares the length of each column with the expected value.
+print: Outputs lines with mismatched lengths or extra columns.
+Input Files:
+lengthsfile: This file contains one number per line, where each number specifies the expected length of the corresponding column. For example:
+
+Copy code
+1
+5
+3
+(Means column 1 should be length 1, column 2 length 5, column 3 length 3).
+
+inputfile: The file to check, where columns are separated by Ctrl+G.

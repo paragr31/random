@@ -60,3 +60,33 @@ Copy code
 (Means column 1 should be length 1, column 2 length 5, column 3 length 3).
 
 inputfile: The file to check, where columns are separated by Ctrl+G.
+
+
+awk -F $'\a' '{if (length($COLUMN) != EXPECTED_LENGTH) print "Line", NR, "Column", COLUMN, "Length:", length($COLUMN), "!= Expected:", EXPECTED_LENGTH, $0}' COLUMN=2 EXPECTED_LENGTH=5 inputfile
+
+
+Explanation:
+-F $'\a': Sets the field separator to Ctrl+G.
+COLUMN=2: Specify the field/column number to check (e.g., column 2).
+EXPECTED_LENGTH=5: Specify the expected length of the column (e.g., 5).
+length($COLUMN): Calculates the actual length of the specified column.
+print: Prints the line number, column number, actual length, expected length, and the line content if the condition fails.
+inputfile: Replace this with your actual file name.
+Example:
+Suppose inputfile contains:
+
+Copy code
+123^Ghello^G456
+789^Ghi^G12
+345^Gworld^G789
+(^G is a Ctrl+G character).
+
+Run the command with:
+
+bash
+Copy code
+awk -F $'\a' '{if (length($COLUMN) != EXPECTED_LENGTH) print "Line", NR, "Column", COLUMN, "Length:", length($COLUMN), "!= Expected:", EXPECTED_LENGTH, $0}' COLUMN=2 EXPECTED_LENGTH=5 inputfile
+Output:
+mathematica
+Copy code
+Line 2 Column 2 Length: 2 != Expected: 5 789^Ghi^G12
